@@ -1,0 +1,524 @@
+<!DOCTYPE html><html lang="zh-CN"> <head> <meta charset="UTF-8"> <meta name="viewport" content="width=device-width, initial-scale=1.0"> <title>成都天府广场地铁站智能导览</title> <style> /* 基础样式 */ * { font-family: "Microsoft YaHei", sans-serif; line-height: 1.6; margin: 0; padding: 0; box-sizing: border-box; }
+    body {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 20px;
+        background-color: #f5f5f5;
+        color: #333;
+    }
+    
+    .section {
+        background: white;
+        border-radius: 15px;
+        padding: 25px;
+        margin-bottom: 30px;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+        transition: all 0.3s ease;
+    }
+    
+    .section:hover {
+        box-shadow: 0 6px 18px rgba(0,0,0,0.15);
+        transform: translateY(-3px);
+    }
+    
+    h1 {
+        color: #1a237e;
+        text-align: center;
+        margin-bottom: 40px;
+        font-size: 2.5rem;
+        text-shadow: 1px 1px 3px rgba(0,0,0,0.1);
+    }
+    
+    h2 {
+        color: #303f9f;
+        border-bottom: 3px solid #3f51b5;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        font-size: 1.8rem;
+    }
+    
+    h3 {
+        color: #007bff;
+        margin-bottom: 15px;
+        font-size: 1.3rem;
+    }
+    
+    h4 {
+        color: #4caf50;
+        margin-bottom: 15px;
+        font-size: 1.5rem;
+    }
+    
+    p {
+        margin-bottom: 15px;
+        font-size: 1.1rem;
+    }
+    
+    /* 天气模块样式 */
+    .weather {
+        background: linear-gradient(to right, #e3f2fd, #bbdefb);
+        padding: 20px;
+        border-radius: 12px;
+        margin-bottom: 30px;
+    }
+    
+    .weather h2 {
+        margin-bottom: 15px;
+    }
+    
+    .weather p {
+        font-size: 1.2rem;
+        display: flex;
+        align-items: center;
+    }
+    
+    .weather strong {
+        font-size: 1.3rem;
+        margin: 0 8px;
+    }
+    
+    /* 地铁换乘提醒样式 */
+    .transfer-alert {
+        background: linear-gradient(to right, #fff8e1, #ffecb3);
+        border-radius: 15px;
+        padding: 25px;
+    }
+    
+    .transfer-alert h2 {
+        color: #d32f2f;
+        border-bottom: 2px dashed #ffcdd2;
+        margin-bottom: 25px;
+    }
+    
+    .transfer-info {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 25px;
+    }
+    
+    .line-box {
+        background: white;
+        border-radius: 12px;
+        padding: 20px;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    .line-box h3 {
+        margin-bottom: 15px;
+        font-size: 1.4rem;
+    }
+    
+    .line-box ul {
+        list-style: none;
+        padding-left: 0;
+    }
+    
+    .line-box li {
+        padding: 8px 0;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        font-size: 1.1rem;
+    }
+    
+    .notice {
+        grid-column: 1 / -1;
+        background: #fff3e0;
+        padding: 20px;
+        border-radius: 12px;
+        margin-top: 25px;
+    }
+    
+    .notice p {
+        margin-bottom: 15px;
+        font-weight: bold;
+        color: #bf360c;
+    }
+    
+    .notice ol {
+        padding-left: 25px;
+    }
+    
+    .notice li {
+        margin-bottom: 8px;
+        font-size: 1.1rem;
+    }
+    
+    /* 导出信息表格样式 */
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 30px 0;
+        background: white;
+        border-radius: 12px;
+        overflow: hidden;
+        box-shadow: 0 3px 10px rgba(0,0,0,0.1);
+    }
+    
+    th, td {
+        border: 1px solid #e0e0e0;
+        padding: 18px;
+        text-align: left;
+        font-size: 1.1rem;
+    }
+    
+    th {
+        background: linear-gradient(to right, #3f51b5, #5c6bc0);
+        color: white;
+    }
+    
+    tr:nth-child(even) {
+        background-color: #f8f9fa;
+    }
+    
+    tr:hover {
+        background-color: #e8f0fe;
+    }
+    
+    /* 导航按钮样式 */
+    .nav-buttons {
+        display: flex;
+        gap: 12px;
+        flex-wrap: wrap;
+        align-items: center;
+    }
+    
+    .nav-button {
+        padding: 10px 20px;
+        border-radius: 25px;
+        background: linear-gradient(to right, #3f51b5, #5c6bc0);
+        color: white !important;
+        font-size: 1rem;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    
+    .nav-button:hover {
+        background: linear-gradient(to right, #303f9f, #455a71);
+        transform: translateY(-2px);
+        box-shadow: 0 4px 8px rgba(0,0,0,0.2);
+    }
+    
+    /* AR全景容器样式 */
+    .ar-popup {
+        display: none;
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        width: 80vw;
+        height: 60vh;
+        background: white;
+        border-radius: 15px;
+        box-shadow: 0 0 30px rgba(0,0,0,0.3);
+        z-index: 1000;
+        overflow: hidden;
+    }
+    
+    .ar-close {
+        position: absolute;
+        right: 20px;
+        top: 15px;
+        font-size: 28px;
+        cursor: pointer;
+        color: #666;
+        z-index: 10;
+    }
+    
+    .ar-close:hover {
+        color: #d32f2f;
+    }
+    
+    iframe {
+        width: 100%;
+        height: 100%;
+        border: none;
+    }
+    
+    /* 响应式设计 */
+    @media (max-width: 768px) {
+        .transfer-info {
+            grid-template-columns: 1fr;
+        }
+        
+        table {
+            font-size: 0.95rem;
+        }
+        
+        td, th {
+            padding: 12px 15px;
+        }
+        
+        .nav-buttons {
+            flex-direction: column;
+        }
+        
+        .nav-button {
+            padding: 12px;
+            width: 100%;
+            justify-content: center;
+        }
+        
+        .ar-popup {
+            width: 95vw;
+            height: 55vh;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        body {
+            padding: 15px;
+        }
+        
+        h1 {
+            font-size: 2rem;
+        }
+        
+        .section {
+            padding: 20px;
+        }
+        
+        .weather p, .notice li {
+            font-size: 1rem;
+        }
+    }
+</style>
+</head> <body> <h1>成都天府广场地铁站智能导览系统</h1>
+复制
+<div class="section">
+    <div class="weather">
+        <h2>2025年3月18日 实时天气</h2>
+        <p>☁️ <strong>多云转阴</strong>，气温 <strong>12℃~18℃</strong>，微风3级，建议携带薄外套。</p>
+    </div>
+</div>
+
+<div class="section transfer-alert">
+    <h2>🚇 地铁换乘提醒 (2025年3月18日)</h2>
+    <div class="transfer-info">
+        <div class="line-box">
+            <h3>地铁1号线</h3>
+            <ul>
+                <li>⏰ 运营时间：06:15-23:30</li>
+                <li>🔁 换乘方向：科学城方向 ⇄ 韦家碾方向</li>
+                <li>🚧 当前状态：正常运营</li>
+            </ul>
+        </div>
+        
+        <div class="line-box">
+            <h3>地铁2号线</h3>
+            <ul>
+                <li>⏰ 运营时间：06:10-23:45</li>
+                <li>🔁 换乘方向：龙泉驿方向 ⇄ 犀浦方向</li>
+                <li>🚧 当前状态：正常运营</li>
+            </ul>
+        </div>
+
+        <div class="notice">
+            <p>⚠️ 温馨提示：</p>
+            <ol>
+                <li>末班车前5分钟停止换乘，当前时间：<span id="currentTime">15:30</span></li>
+                <li>1号线与2号线换乘需通过站厅层，步行约3分钟</li>
+                <li>携带大件行李请使用H出口无障碍电梯</li>
+            </ol>
+        </div>
+    </div>
+</div>
+
+<script>
+    // 实时时间更新
+    function updateTime() {
+        const now = new Date();
+        document.getElementById('currentTime').textContent = 
+            now.toLocaleTimeString('zh-CN', { hour: '2-digit', minute: '2-digit' });
+    }
+    setInterval(updateTime, 1000);
+    updateTime(); // 初始化时间
+</script>
+
+<div class="section">
+    <h4>出口信息与周边导览</h4>
+    <table>
+        <tr>
+            <th>出口</th>
+            <th>主要通往地点/景点</th>
+            <th>周边推荐美食</th>
+            <th width="160">导航服务</th>
+        </tr>
+
+        <!-- A出口 -->
+        <tr>
+            <td>A</td>
+            <td>下沉广场</td>
+            <td>星巴克（下沉广场店）、丸摩堂鲜果茶</td>
+            <td>
+                <div class="nav-buttons">
+                    <a href="https://uri.amap.com/marker?position=104.066541,30.656386&name=A出口" 
+                       class="nav-button" target="_blank">
+                        <span>地图导航</span>
+                    </a>
+                </div>
+            </td>
+        </tr>
+
+        <!-- B出口 -->
+        <tr>
+            <td>B</td>
+            <td>下沉广场</td>
+            <td>肯德基（24小时）、便利蜂</td>
+            <td>
+                <div class="nav-buttons">
+                    <a href="https://uri.amap.com/marker?position=104.066782,30.65612&name=B出口" 
+                       class="nav-button" target="_blank">
+                        <span>地图导航</span>
+                    </a>
+                </div>
+            </td>
+        </tr>
+
+        <!-- C出口 -->
+        <tr>
+            <td>C</td>
+            <td>西御街、小河街、人民中路一段、陕西街</td>
+            <td>🍲 小龙坎老火锅（西御街店）、🍜 担担面传统小吃</td>
+            <td>
+                <div class="nav-buttons">
+                    <a href="https://uri.amap.com/marker?position=104.06612,30.655893&name=C出口" 
+                       class="nav-button" target="_blank">
+                        <span>地图导航</span>
+                    </a>
+                </div>
+            </td>
+        </tr>
+
+        <!-- D出口 -->
+        <tr>
+            <td>D</td>
+            <td>下沉广场、地面广场（直连天府广场）</td>
+            <td>天府广场地下美食城（川菜/快餐集合）</td>
+            <td>
+                <div class="nav-buttons">
+                    <a href="https://uri.amap.com/marker?position=104.066332,30.656745&name=D出口" 
+                       class="nav-button" target="_blank">
+                        <span>地图导航</span>
+                    </a>
+                </div>
+            </td>
+        </tr>
+
+        <!-- E出口 -->
+        <tr>
+            <td>E</td>
+            <td>东御街、染坊街、梨花街（近春熙路商圈）</td>
+            <td>🥟 钟水饺总店、🍢 乐山钵钵鸡</td>
+            <td>
+                <div class="nav-buttons">
+                    <a href="https://uri.amap.com/marker?position=104.06712,30.655621&name=E出口" 
+                       class="nav-button" target="_blank">
+                        <span>地图导航</span>
+                    </a>
+                </div>
+            </td>
+        </tr>
+
+        <!-- F出口 -->
+        <tr>
+            <td>F</td>
+            <td>人民中路一段、蜀都大道、锦城艺术宫</td>
+            <td>☕ %Arabica咖啡、🎭 剧院内轻食餐厅</td>
+            <td>
+                <div class="nav-buttons">
+                    <a href="https://uri.amap.com/marker?position=104.065987,30.657234&name=F出口" 
+                       class="nav-button" target="_blank">
+                        <span>地图导航</span>
+                    </a>
+                </div>
+            </td>
+        </tr>
+
+        <!-- G出口 -->
+        <tr>
+            <td>G</td>
+            <td>蜀都大道、成都市人民政府、四川省科技馆</td>
+            <td>🥘 皇城老妈火锅、🍵 鹤鸣茶社分馆</td>
+            <td>
+                <div class="nav-buttons">
+                    <a href="https://uri.amap.com/marker?position=104.066001,30.657892&name=G出口" 
+                       class="nav-button" target="_blank">
+                        <span>地图导航</span>
+                    </a>
+                </div>
+            </td>
+        </tr>
+
+        <!-- H出口 -->
+        <tr>
+            <td>H</td>
+            <td>人民中路一段、蜀都大道、小河街、成都市人民政府、四川省科技馆</td>
+            <td>📚 图书馆内咖啡厅、🍰 无印良品MUJI轻食</td>
+            <td>
+                <div class="nav-buttons">
+                    <a href="https://uri.amap.com/marker?position=104.065742,30.657654&name=H出口" 
+                       class="nav-button" target="_blank">
+                        <span>地图导航</span>
+                    </a>
+                </div>
+            </td>
+        </tr>
+
+        <!-- J出口 -->
+        <tr>
+            <td>J</td>
+            <td>人民中路一段、蜀都大道、小河街、成都市人民政府、四川省科技馆</td>
+            <td>📚 图书馆内咖啡厅、🍰 无印良品MUJI轻食</td>
+            <td>
+                <div class="nav-buttons">
+                    <a href="https://uri.amap.com/marker?position=104.065581,30.657321&name=J出口" 
+                       class="nav-button" target="_blank">
+                        <span>地图导航</span>
+                    </a>
+                </div>
+            </td>
+        </tr>
+    </table>
+</div>
+
+<!-- AR全景容器 -->
+<div id="ar-container" class="ar-popup">
+    <span class="ar-close" onclick="closeAR()">×</span>
+    <iframe id="ar-frame" width="100%" height="100%" frameborder="0"></iframe>
+</div>
+
+<script>
+    // AR全景控制函数
+    function showAR(exit) {
+        const container = document.getElementById('ar-container');
+        const frame = document.getElementById('ar-frame');
+        
+        // 示例AR链接（需替换为实际AR服务地址）
+        const arLinks = {
+            'A': 'https://example.com/ar/A-exit',
+            'B': 'https://example.com/ar/B-exit',
+            // 补充其他出口的AR链接
+        };
+
+        frame.src = arLinks[exit];
+        container.style.display = 'block';
+    }
+
+    function closeAR() {
+        document.getElementById('ar-container').style.display = 'none';
+        document.getElementById('ar-frame').src = '';
+    }
+
+    // 点击空白处关闭AR
+    window.onclick = function(event) {
+        const container = document.getElementById('ar-container');
+        if (event.target == container) {
+            closeAR();
+        }
+    }
+</script>
+</body> </html>
